@@ -1,0 +1,589 @@
+\documentclass[12pt,a4paper]{article}
+
+% Character encoding and language
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+% Page layout and design
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{mdframed}
+\usepackage{float}  % Added for [H] float option
+\usepackage{tikz}   % Added for tikz environments
+\usepackage{tabularx}
+
+% Mathematics packages
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+
+% Font packages
+\usepackage{mathpazo}  % for Palatino font with matching math font
+\usepackage[T1]{fontenc}
+
+% Typography enhancements
+\usepackage{microtype}
+
+% Tables and lists
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{enumitem}
+
+% Graphics and Figures
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Code listings
+\usepackage{listings}
+
+% Custom box environments
+\usepackage{tcolorbox}  % Added for tcolorbox environments
+
+% Colors
+\definecolor{uqpurple}{RGB}{81,36,122}
+\definecolor{uqgold}{RGB}{50,20,5}
+\definecolor{lightgray}{gray}{0.95}
+
+% Base style for environments
+\newmdenv[
+  linecolor=uqpurple,
+  backgroundcolor=lightgray,
+  linewidth=3pt,
+  topline=false,
+  bottomline=false,
+  rightline=false,
+  leftmargin=20pt,
+  innerleftmargin=15pt,
+  innerrightmargin=0pt,
+  innertopmargin=5pt,
+  innerbottommargin=5pt
+]{basebox}
+
+\newenvironment{example}[1][]
+{\begin{basebox}[linecolor=uqgold]
+\textbf{\color{uqgold}Example:} \textit{#1}\par\noindent\ignorespaces}
+{\end{basebox}}
+
+% Listings style
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{lightgray},   
+    commentstyle=\color{green!60!black},
+    keywordstyle=\color{uqpurple},
+    numberstyle=\tiny\color{gray},
+    stringstyle=\color{uqgold},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+% Page layout settings
+\geometry{margin=1in}
+\setlength{\parskip}{12pt plus 3pt minus 1pt}
+\setlength{\parindent}{0pt}
+
+% Section formatting
+\titleformat{\section}
+{\color{uqpurple}\normalfont\Large\bfseries}
+{\thesection}{1em}{}
+\titleformat{\subsection}
+{\color{uqpurple}\normalfont\large\bfseries}
+{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\color{uqpurple}\normalfont\normalsize\bfseries}
+{\thesubsubsection}{1em}{}
+
+% Custom header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{uqpurple}{eQTL Mapping with Matrix eQTL}}
+\fancyhead[R]{\textcolor{uqpurple}{Daniel Ortiz-Barrientos}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Title page settings
+\pretitle{\begin{center}\LARGE\bfseries\color{uqpurple}}
+\posttitle{\end{center}}
+\preauthor{\begin{center}\large\color{uqgold}}
+\postauthor{\end{center}}
+\predate{\begin{center}\large}
+\postdate{\end{center}\vspace{0.5em}}
+
+% Hyperlinks (load last)
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=uqpurple,
+    filecolor=uqgold,
+    urlcolor=uqpurple,
+    citecolor=uqpurple
+}
+
+% Document information
+\title{\textcolor{uqpurple}{eQTL Mapping with Matrix eQTL}}
+\author{
+    \textbf{Daniel Ortiz-Barrientos}\\
+    \small School of the Environment\\
+    \small Genetics, Ecology and Evolution Section\\
+    \small ARC Centre of Excellence for Plant Success\\
+    \small The University of Queensland, Australia
+}
+\date{July 2024}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Introduction}
+
+Matrix eQTL is an efficient and versatile R package designed for expression Quantitative Trait Loci (eQTL) analysis. It was developed to address the computational challenges associated with large-scale eQTL studies, which often involve millions of SNPs and thousands of gene expression traits.
+
+\subsection{Rationale}
+
+The primary motivation behind Matrix eQTL is to provide a fast and memory-efficient tool for eQTL analysis. Traditional methods for eQTL mapping can be computationally intensive, especially when dealing with high-dimensional data. Matrix eQTL overcomes these limitations by:
+
+\begin{itemize}
+    \item Utilizing efficient matrix operations to speed up calculations
+    \item Implementing a memory-efficient algorithm that processes data in slices
+    \item Supporting both linear and ANOVA models for eQTL analysis
+    \item Allowing separate analysis of cis- and trans-eQTLs
+    \item Providing built-in correction for multiple testing
+\end{itemize}
+
+\subsection{Mathematical Framework}
+
+Matrix eQTL employs linear regression models to test for associations between genetic variants (SNPs) and gene expression levels. The general form of the model is:
+
+\begin{equation}
+Y = XB + E
+\end{equation}
+
+Where:
+\begin{itemize}
+    \item \texttt{Y} is the matrix of gene expression levels (genes in rows, samples in columns)
+    \item \texttt{X} is the matrix of genotypes and covariates (SNPs and covariates in rows, samples in columns)
+    \item \texttt{B} is the matrix of regression coefficients
+    \item \texttt{E} is the matrix of error terms
+\end{itemize}
+
+The package supports three main models:
+
+\begin{enumerate}
+    \item \textbf{Linear Model (modelLINEAR):} Tests for additive effects of genotypes on gene expression.
+    \begin{equation}
+    \texttt{expression} = \alpha + \sum_{k} \beta_k \cdot \texttt{covariate}_k + \gamma \cdot \texttt{genotype}_{\text{additive}}
+    \end{equation}
+    
+    \item \textbf{ANOVA Model (modelANOVA):} Tests for both additive and dominant effects.
+    \begin{equation}
+    \texttt{expression} = \alpha + \sum_{k} \beta_k \cdot \texttt{covariate}_k + \gamma_1 \cdot \texttt{genotype}_{\text{additive}} + \gamma_2 \cdot \texttt{genotype}_{\text{dominant}}
+    \end{equation}
+    
+    \item \textbf{Linear Cross Model (modelLINEAR\_CROSS):} Tests for interaction between genotype and a covariate.
+    \begin{equation}
+    \texttt{expression} = \alpha + \sum_{k} \beta_k \cdot \texttt{covariate}_k + \gamma \cdot \texttt{genotype}_{\text{additive}} + \delta \cdot \texttt{genotype}_{\text{additive}} \cdot \texttt{covariate}_K
+    \end{equation}
+\end{enumerate}
+
+Matrix eQTL achieves its high performance by reformulating these regression problems into matrix operations, allowing for efficient computation using optimized linear algebra libraries.
+
+\section{Using Matrix eQTL}
+
+\subsection{Installation}
+Install the Matrix eQTL R package from CRAN:
+
+\begin{verbatim}
+install.packages("MatrixEQTL")
+\end{verbatim}
+
+\subsection{Basic Usage}
+
+\begin{enumerate}
+    \item Load the package:
+    \begin{verbatim}
+    library("MatrixEQTL")
+    \end{verbatim}
+    
+    \item Set up parameters:
+    \begin{verbatim}
+    useModel = modelLINEAR
+    SNP_file_name = "path/to/SNP.txt"
+    expression_file_name = "path/to/GE.txt"
+    covariates_file_name = "path/to/Covariates.txt"
+    output_file_name = "path/to/output.txt"
+    pvOutputThreshold = 1e-5
+    \end{verbatim}
+    
+    \item Load data:
+    \begin{verbatim}
+    snps = SlicedData$new()
+    snps$fileDelimiter = "\t"
+    snps$fileOmitCharacters = "NA"
+    snps$fileSkipRows = 1
+    snps$fileSkipColumns = 1
+    snps$fileSliceSize = 2000
+    snps$LoadFile(SNP_file_name)
+    
+    # Repeat similar steps for gene expression and covariates
+    \end{verbatim}
+    
+    \item Run analysis:
+    \begin{verbatim}
+    me = Matrix_eQTL_engine(
+        snps = snps,
+        gene = gene,
+        cvrt = cvrt,
+        output_file_name = output_file_name,
+        pvOutputThreshold = pvOutputThreshold,
+        useModel = useModel,
+        errorCovariance = numeric(),
+        verbose = TRUE,
+        pvalue.hist = TRUE,
+        min.pv.by.genesnp = FALSE,
+        noFDRsaveMemory = FALSE
+    )
+    \end{verbatim}
+\end{enumerate}
+
+\subsection{Cis- and Trans- eQTL Analysis}
+For cis/trans analysis, additional parameters are required:
+
+\begin{verbatim}
+pvOutputThreshold.cis = 1e-2
+output_file_name.cis = "path/to/cis_output.txt"
+cisDist = 1e6
+snpspos = read.table("snp_positions.txt", header = TRUE, stringsAsFactors = FALSE)
+genepos = read.table("gene_positions.txt", header = TRUE, stringsAsFactors = FALSE)
+
+me = Matrix_eQTL_main(
+    snps = snps,
+    gene = gene,
+    cvrt = cvrt,
+    output_file_name = output_file_name,
+    pvOutputThreshold = pvOutputThreshold,
+    useModel = useModel,
+    errorCovariance = numeric(),
+    verbose = TRUE,
+    output_file_name.cis = output_file_name.cis,
+    pvOutputThreshold.cis = pvOutputThreshold.cis,
+    snpspos = snpspos,
+    genepos = genepos,
+    cisDist = cisDist,
+    pvalue.hist = TRUE,
+    min.pv.by.genesnp = FALSE,
+    noFDRsaveMemory = FALSE
+)
+\end{verbatim}
+
+\subsection{Data Format}
+Input files (SNP data, gene expression, covariates, gene location, and SNP location) should have:
+\begin{itemize}
+    \item Columns corresponding to samples (for SNP, gene expression, and covariate files)
+    \item One gene/SNP/covariate per row
+    \item Matching column order across files (for SNP, gene expression, and covariate files)
+    \item Numeric values (genotype values need not be discrete)
+    \item Tab-delimited format
+\end{itemize}
+
+\subsubsection{Example Input Files}
+Here are examples of all the input files required for a comprehensive Matrix eQTL analysis:
+
+\paragraph{1. SNP Data File:}
+\small
+\begin{longtable}{l|*{8}{c}}
+\hline
+id & Sam\_01 & Sam\_02 & Sam\_03 & Sam\_04 & Sam\_05 & Sam\_06 & Sam\_07 & \ldots \\
+\hline
+Snp\_01 & 2 & 0 & 2 & 0 & 2 & 1 & 2 & \ldots \\
+Snp\_02 & 0 & 1 & 1 & 2 & 2 & 1 & 0 & \ldots \\
+Snp\_03 & 1 & 0 & 1 & 0 & 1 & 1 & 1 & \ldots \\
+Snp\_04 & 0 & 1 & 2 & 2 & 2 & 1 & 1 & \ldots \\
+Snp\_05 & 1 & 1 & 2 & 1 & 1 & 2 & 1 & \ldots \\
+\hline
+\end{longtable}
+\normalsize
+
+\paragraph{2. Gene Expression File:}
+\small
+\begin{longtable}{l|*{8}{c}}
+\hline
+id & Sam\_01 & Sam\_02 & Sam\_03 & Sam\_04 & Sam\_05 & Sam\_06 & Sam\_07 & \ldots \\
+\hline
+Gene\_01 & 4.91 & 4.63 & 5.18 & 5.07 & 5.74 & 5.09 & 5.31 & \ldots \\
+Gene\_02 & 13.78 & 13.14 & 13.18 & 13.04 & 12.85 & 13.07 & 13.09 & \ldots \\
+Gene\_03 & 12.06 & 12.29 & 13.07 & 13.65 & 13.86 & 12.84 & 12.29 & \ldots \\
+Gene\_04 & 11.63 & 11.88 & 12.74 & 12.66 & 13.16 & 11.99 & 11.97 & \ldots \\
+Gene\_05 & 14.72 & 14.66 & 14.63 & 15.91 & 15.46 & 14.74 & 15.17 & \ldots \\
+\hline
+\end{longtable}
+\normalsize
+
+\paragraph{3. Covariates File:}
+\small
+\begin{longtable}{l|*{8}{c}}
+\hline
+id & Sam\_01 & Sam\_02 & Sam\_03 & Sam\_04 & Sam\_05 & Sam\_06 & Sam\_07 & \ldots \\
+\hline
+gender & 0 & 0 & 0 & 0 & 0 & 0 & 0 & \ldots \\
+age & 36 & 40 & 46 & 65 & 69 & 43 & 40 & \ldots \\
+\hline
+\end{longtable}
+\normalsize
+
+\paragraph{4. Gene Location File:}
+\small
+\begin{longtable}{l|c|r|r}
+\hline
+geneid & chr & s1 & s2 \\
+\hline
+Gene\_01 & chr1 & 721289 & 731289 \\
+Gene\_02 & chr1 & 752565 & 762565 \\
+Gene\_03 & chr1 & 777121 & 787121 \\
+Gene\_04 & chr1 & 785988 & 795988 \\
+Gene\_05 & chr1 & 792479 & 802479 \\
+Gene\_06 & chr1 & 798958 & 808958 \\
+Gene\_07 & chr1 & 888658 & 898658 \\
+Gene\_08 & chr1 & 918572 & 928572 \\
+Gene\_09 & chr1 & 926430 & 936430 \\
+Gene\_10 & chr1 & 1000000 & 1010000 \\
+\hline
+\end{longtable}
+\normalsize
+
+\paragraph{5. SNP Location File:}
+\small
+\begin{longtable}{l|c|r}
+\hline
+snp & chr & pos \\
+\hline
+Snp\_01 & chr1 & 721289 \\
+Snp\_02 & chr1 & 752565 \\
+Snp\_03 & chr1 & 777121 \\
+Snp\_04 & chr1 & 785988 \\
+Snp\_05 & chr1 & 792479 \\
+Snp\_06 & chr1 & 798958 \\
+Snp\_07 & chr1 & 888658 \\
+Snp\_08 & chr1 & 918572 \\
+Snp\_09 & chr1 & 926430 \\
+Snp\_10 & chr1 & 947033 \\
+\hline
+\end{longtable}
+\normalsize
+
+These examples illustrate the structure of each input file:
+
+\begin{itemize}
+    \item SNP and Gene Expression files: Rows represent SNPs or genes, columns represent samples.
+    \item Covariates file: Rows represent different covariates, columns represent samples.
+    \item Gene Location file: Contains chromosome and start/end positions for each gene.
+    \item SNP Location file: Contains chromosome and position for each SNP.
+\end{itemize}
+
+Note that all files are tab-delimited and include a header row. The sample IDs (Sam\_01, Sam\_02, etc.) must match across the SNP, Gene Expression, and Covariates files. The tables above show truncated versions of the files for space reasons; actual files would include all samples and SNPs/genes.
+
+\subsection{Explanation of Code to Build \texttt{snpspos}}
+
+The code builds the \texttt{snpspos} file by mapping the SNP identifiers (\texttt{snp}) to their respective chromosome (\texttt{chr}) and position (\texttt{pos}) using the transcriptome data. Here is how it works:
+
+\begin{enumerate}
+    \item \textbf{Load the Necessary Data:} The transcriptome data is loaded using the \texttt{fread} function. This data contains information about the transcript IDs, chromosomes, positions, and other attributes.
+    \begin{lstlisting}[language=R]
+    # Load the necessary data
+    transcriptome <- fread("Transcriptome to 1.41.txt")
+    \end{lstlisting}
+
+    \item \textbf{Extract Unique SNPs from the Genotype Data:} The unique SNP identifiers are extracted from the genotype data (\texttt{allele\_freqs}) which is also loaded earlier in the script.
+    \begin{lstlisting}[language=R]
+    # Extract unique SNPs from the genotype data
+    unique_snps <- unique(allele_freqs$id)
+    \end{lstlisting}
+
+    \item \textbf{Clean the Transcript IDs:} The transcript IDs in the transcriptome data are cleaned to match the format of the SNP identifiers by removing any prefixes and suffixes.
+    \begin{lstlisting}[language=R]
+    # Clean and map SNPs to their positions using the transcriptome data
+    transcriptome[, clean_Transcript_ID := gsub("TrN2TFQ_|\\.path[0-9]+", "", Transcript_ID)]
+    unique_snps <- gsub("TrN2TFQ_|\\.path[0-9]+", "", unique_snps)
+    \end{lstlisting}
+
+    \item \textbf{Map SNPs to Their Positions:} The cleaned transcript IDs are then used to map the SNPs to their positions in the genome. This is done by matching the cleaned transcript IDs with the unique SNP identifiers and extracting the relevant chromosome and position information.
+    \begin{lstlisting}[language=R]
+    snp_positions <- transcriptome[clean_Transcript_ID %in% unique_snps, .(snp = clean_Transcript_ID, chr = CHROM, pos = POS)]
+    \end{lstlisting}
+
+    \item \textbf{Save the SNP Positions:} The mapped SNP positions are then saved to a file (\texttt{snpspos.txt}) using the \texttt{fwrite} function.
+    \begin{lstlisting}[language=R]
+    fwrite(snp_positions, file = "snpspos.txt", sep = "\t")
+    \end{lstlisting}
+\end{enumerate}
+
+Explanation of where the \texttt{id} and \texttt{pos} come from:
+
+\begin{itemize}
+    \item \textbf{id:} The \texttt{id} in the \texttt{snpspos} file corresponds to the cleaned transcript IDs from the transcriptome data. These IDs are matched with the unique SNP identifiers from the genotype data.
+    \item \textbf{chr and pos:} The \texttt{chr} and \texttt{pos} columns come from the transcriptome data, which provides the chromosome and position of each transcript (and consequently, each SNP) in the genome.
+\end{itemize}
+
+\subsubsection{Gene Position File}
+
+\begin{lstlisting}[language=R]
+# 2.2 Gene Position File
+# Extract unique genes from the gene expression data
+unique_genes <- unique(gene_exp$Gene_Id)
+
+# Define a function to map genes to their positions using the transcriptome data
+map_genes_to_positions <- function(genes_subset, transcriptome) {
+  gene_positions <- transcriptome[Transcript_ID %in% genes_subset, .(geneid = Transcript_ID, chr = CHROM, s1 = POS, s2 = POS + Length)]
+  return(gene_positions)
+}
+
+# Split the unique genes into chunks for parallel processing
+num_cores <- detectCores() - 1
+genes_chunks <- split(unique_genes, cut(seq_along(unique_genes), num_cores, labels = FALSE))
+
+# Use parallel processing to map genes to positions
+cl <- makeCluster(num_cores)
+clusterEvalQ(cl, {
+  library(data.table)
+})
+clusterExport(cl, list("transcriptome", "map_genes_to_positions"))
+
+# Complete the gene position mapping using parallel processing
+gene_positions_list <- parLapply(cl, genes_chunks, function(chunk) map_genes_to_positions(chunk, transcriptome))
+stopCluster(cl)
+
+# Combine the results from parallel processing
+gene_positions <- rbindlist(gene_positions_list)
+
+# Save the gene positions to file
+fwrite(gene_positions, file = "genepos.txt", sep = "\t")
+
+# Confirm the gene positions file
+formatted_genepos <- fread("genepos.txt")
+print(head(formatted_genepos))
+
+# Check warnings
+warnings()
+\end{lstlisting}
+
+\subsubsection{Running the Matrix eQTL Analysis}
+
+\begin{lstlisting}[language=R]
+# Step 3: Run the Matrix eQTL Analysis
+# Define file paths
+SNP_file_name <- "genotype_formatted.txt"
+expression_file_name <- "gene_expression_formatted.txt"
+covariates_file_name <- character()
+output_file_name_cis <- "cis_eqtl_output.txt"
+output_file_name_trans <- "trans_eqtl_output.txt"
+
+# Define parameters for Matrix eQTL
+useModel <- modelLINEAR
+SNP_file_delimiter <- "\t"
+expression_file_delimiter <- "\t"
+covariates_file_delimiter <- "\t"
+pvOutputThreshold_cis <- 1e-2
+pvOutputThreshold_trans <- 1e-2
+errorCovariance <- numeric()
+cisDist <- 1e6
+
+# Load genotype data
+snps <- SlicedData$new()
+snps$fileDelimiter <- SNP_file_delimiter
+snps$fileOmitCharacters <- "NA"
+snps$fileSkipRows <- 1
+snps$fileSkipColumns <- 1
+snps$fileSliceSize <- 2000
+snps$LoadFile(SNP_file_name)
+
+# Load gene expression data
+gene <- SlicedData$new()
+gene$fileDelimiter <- expression_file_delimiter
+gene$fileOmitCharacters <- "NA"
+gene$fileSkipRows <- 1
+gene$fileSkipColumns <- 1
+gene$fileSliceSize <- 2000
+gene$LoadFile(expression_file_name)
+
+# Load covariates if any
+cvrt <- SlicedData$new()
+cvrt$fileDelimiter <- covariates_file_delimiter
+cvrt$fileOmitCharacters <- "NA"
+cvrt$fileSkipRows <- 1
+cvrt$fileSkipColumns <- 1
+if (length(covariates_file_name) > 0) {
+  cvrt$LoadFile(covariates_file_name)
+}
+
+# Run the cis-eQTL analysis
+me_cis <- Matrix_eQTL_main(
+  snps = snps,
+  gene = gene,
+  cvrt = cvrt,
+  output_file_name = output_file_name_cis,
+  pvOutputThreshold = pvOutputThreshold_cis,
+  useModel = useModel,
+  errorCovariance = errorCovariance,
+  verbose = TRUE,
+  snpspos = snp_positions,
+  genepos = gene_positions,
+  cisDist = cisDist,
+  pvalue.hist = "qqplot",
+  min.pv.by.genesnp = TRUE,
+  noFDRsaveMemory = FALSE
+)
+
+# Run the trans-eQTL analysis
+me_trans <- Matrix_eQTL_main(
+  snps = snps,
+  gene = gene,
+  cvrt = cvrt,
+  output_file_name = output_file_name_trans,
+  pvOutputThreshold = pvOutputThreshold_trans,
+  useModel = useModel,
+  errorCovariance = errorCovariance,
+  verbose = TRUE,
+  snpspos = snp_positions,
+  genepos = gene_positions,
+  cisDist = 0,  # Trans-eQTLs are typically identified with no distance constraint
+  pvalue.hist = "qqplot",
+  min.pv.by.genesnp = TRUE,
+  noFDRsaveMemory = FALSE
+)
+
+# Save the results
+cat('Cis-eQTL analysis done in: ', me_cis$time.in.sec, ' seconds\n')
+cat('Trans-eQTL analysis done in: ', me_trans$time.in.sec, ' seconds\n')
+
+cis_eqtls <- me_cis$cis$eqtls
+trans_eqtls <- me_trans$trans$eqtls
+
+fwrite(cis_eqtls, file = "cis_eqtls_results.txt", sep = "\t")
+fwrite(trans_eqtls, file = "trans_eqtls_results.txt", sep = "\t")
+\end{lstlisting}
+
+\section{Conclusion}
+This document provides a comprehensive guide to performing eQTL mapping using the Matrix eQTL package in R. By following the steps outlined, researchers can prepare their data, format it correctly, and run efficient eQTL analyses to uncover associations between genetic variants and gene expression levels.
+
+\section{References}
+\begin{itemize}
+    \item Matrix eQTL: Ultra fast eQTL analysis via large matrix operations. 
+    \item Gene Expression Omnibus (GEO): \url{https://www.ncbi.nlm.nih.gov/geo/}
+    \item R Documentation: \url{https://www.rdocumentation.org/packages/MatrixEQTL}
+\end{itemize}
+
+\end{document}
